@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شقاوة نت - الادمن</title>
+<style>
+body {margin:0; background:#f2f2f2; font-family:Tahoma;}
+.topbar {background:#d40000; height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 15px; color:white;}
+.topbar.back {font-size:24px; cursor:pointer;}
+.topbar.title {font-size:18px; font-weight:bold;}
+.topbar.settings {font-size:24px; cursor:pointer;}
+.shop-card {background:white; padding:15px; border-radius:12px; margin:10px 15px; text-align:right; cursor:pointer; box-shadow:0 2px 8px #ddd;}
+.shop-card h4 {margin:0 0 5px; color:#d40000;}
+.info-box {background:white; padding:15px; border-radius:12px; margin:10px 15px; text-align:right;}
+.info-box h3 {margin:0 0 10px; color:#d40000;}
+.history-item {background:#e8f5e9; padding:10px; border-radius:8px; margin:8px 0; text-align:right; font-size:14px; border-right:3px solid green;}
+.card-type {background:#fff; padding:12px; border-radius:10px; margin:8px 15px; display:flex; justify-content:space-between; align-items:center; border:1px solid #ddd;}
+.btn {background:#d40000; color:white; padding:15px; border:none; width:90%; border-radius:12px; font-size:18px; margin:10px; font-weight:bold; cursor:pointer;}
+.btn.small {padding:8px 12px; width:auto; font-size:13px; margin:3px;}
+.btn.green {background:green;}
+.btn.red {background:red;}
+.btn.gray {background:#666;}
+input {width:90%; padding:12px; margin:8px 0; border:1px solid #ddd; border-radius:12px; font-size:16px; text-align:right;}
+.modal {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;}
+.modal.active {display:flex;}
+.modal-content {background:white; padding:20px; border-radius:20px; width:90%; max-width:400px;}
+.date-box {background:#ffecec; border-radius:12px; padding:10px; margin:10px 15px; text-align:center; color:#d40000; font-weight:bold; font-size:14px;}
+</style>
+</head>
+<body>
+
+<!-- صفحة الادمن - قائمة المحلات -->
+<div id="adminPage">
+  <div class="topbar"><span class="back" onclick="window.location.href='index.html'">←</span><span class="title">المحلات</span><span class="settings" onclick="toggleModal('addShopModal', true)">⚙️</span></div>
+  <div class="date-box" id="serverDate">📅 جاري التحميل...</div>
+  <div id="shopsList"></div>
+</div>
+
+<!-- صفحة تفاصيل المحل -->
+<div id="shopDetailPage" style="display:none;">
+  <div class="topbar"><span class="back" onclick="showAdmin()">←</span><span class="title">تفاصيل المحل</span><span></span></div>
+  <div class="date-box" id="serverDate2">📅 جاري التحميل...</div>
+  <div class="info-box">
+    <h3 id="detailShopName"></h3>
+    <p><b>الكود:</b> <span id="detailShopCode"></span></p>
+    <p><b>الرصيد الحالي:</b> <span id="detailBalance" style="color:green; font-size:20px;"></span> جنيه</p>
+  </div>
+  <div class="info-box">
+    <h3>فئات الكروت <button class="btn small" style="float:left;" onclick="toggleModal('addCardModal', true)">+ اضافة فئة</button></h3>
+    <div id="cardsList"></div>
+  </div>
+  <h3 style="text-align:right; margin:15px;">سجل التحويلات</h3>
+  <div id="detailHistory"></div>
+  <button class="btn green" onclick="showChargeModal()">+ اضافة رصيد</button>
+  <button class="btn red" onclick="showConfirmDelete()">حذف المحل</button>
+</div>
+
+<!-- مودال اضافة محل -->
+<div id="addShopModal" class="modal"><div class="modal-content"><h3>اضافة محل جديد</h3><label>اسم المحل</label><input type="text" id="shopName"><label>كود التفعيل</label><input type="text" id="shopCode"><button class="btn" onclick="addShop()">اضافة</button><button class="btn gray" onclick="toggleModal('addShopModal', false)">الغاء</button></div></div>
+
+<!-- مودال اضافة فئة كارت -->
+<div id="addCardModal" class="modal"><div class="modal-content"><h3>اضافة فئة كارت</h3><label>سعر الكارت</label><input type="number" id="cardPrice" placeholder="مثال: 15"><button class="btn" onclick="addCardType()">اضافة الفئة</button><button class="btn gray" onclick="toggleModal('addCardModal', false)">الغاء</button></div></div>
+
+<!-- مودال اضافة رصيد -->
+<div id="chargeModal" class="modal"><div class="modal-content"><h3>اضافة رصيد</h3><label>المبلغ</label><input type="number" id="chargeAmount" placeholder="اكتب المبلغ"><button class="btn green" onclick="confirmCharge()">تأكيد</button><button class="btn gray" onclick="toggleModal('chargeModal', false)">الغاء</button></div></div>
+
+<!-- مودال رسائل عامة -->
+<div id="msgModal" class="modal"><div class="modal-content" style="text-align:center;"><h3 id="modalTitle">تنبيه</h3><p id="modalText"></p><button class="btn gray" onclick="toggleModal('msgModal', false)">موافق</button></div></div>
+
+<!-- مودال تأكيد الحذف -->
+<div id="confirmModal" class="modal"><div class="modal-content" style="text-align:center;"><h3 id="confirmTitle">تأكيد</h3><p id="confirmText"></p><button class="btn red" onclick="doDelete()">حذف</button><button class="btn gray" onclick="toggleModal('confirmModal', false)">الغاء</button></div></div>
+
+<script>
+let shops = [];
+let currentShopIndex = null;
+let deleteType = ''; // عشان نعرف بنحذف ايه
+let deleteIndex = null;
+
+function saveShops(){ localStorage.setItem('shaqawa_shops_v4', JSON.stringify(shops)); }
+function loadShops(){ let data = localStorage.getItem('shaqawa_shops_v4'); if(data){ shops = JSON.parse(data); } showShops(); }
+
+window.onload = function(){
+  loadShops();
+  updateDateTime();
+  setInterval(updateDateTime, 60000);
+}
+
+function updateDateTime(){
+  let now = new Date();
+  let date = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  let time = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('serverDate').innerHTML = `📅 ${date} <br> ⏰ ${time}`;
+  if(document.getElementById('serverDate2')) {
+    document.getElementById('serverDate2').innerHTML = `📅 ${date} <br> ⏰ ${time}`;
+  }
+}
+
+function toggleModal(id, show){ document.getElementById(id).classList.toggle('active', show); }
+
+function showMsg(title, text){
+  document.getElementById('modalTitle').innerText = title;
+  document.getElementById('modalText').innerText = text;
+  toggleModal('msgModal', true);
+}
+
+function showConfirmDelete(){
+  deleteType = 'shop';
+  document.getElementById('confirmTitle').innerText = 'تأكيد الحذف';
+  document.getElementById('confirmText').innerText = 'متأكد عايز تحذف المحل ده؟';
+  toggleModal('confirmModal', true);
+}
+
+function doDelete(){
+  if(deleteType === 'shop'){
+    shops.splice(currentShopIndex, 1);
+    saveShops();
+    toggleModal('confirmModal', false);
+    showAdmin();
+  }
+  if(deleteType === 'card'){
+    shops[currentShopIndex].cardTypes.splice(deleteIndex,1);
+    saveShops();
+    showCardTypes();
+    toggleModal('confirmModal', false);
+  }
+}
+
+function addShop(){
+  let name = document.getElementById('shopName').value.trim();
+  let code = document.getElementById('shopCode').value.trim().toUpperCase();
+  if(name === "" || code === ""){ showMsg('خطأ', 'لازم الاسم والكود ❌'); return; }
+  if(shops.find(s => s.code === code)){ showMsg('خطأ', 'الكود موجود ❌'); return; }
+  shops.push({name: name, code: code, balance: 0, history: [], cardTypes: []});
+  saveShops();
+  document.getElementById('shopName').value = "";
+  document.getElementById('shopCode').value = "";
+  toggleModal('addShopModal', false);
+  showMsg('تم', 'تم اضافة المحل بنجاح');
+  showShops();
+}
+
+function showShops(){
+  let list = document.getElementById('shopsList');
+  list.innerHTML = "";
+  if(shops.length === 0){ list.innerHTML = "<p style='color:#999; padding:20px; text-align:center;'>دوس على ⚙️ فوق عشان تضيف اول محل</p>"; return; }
+  shops.forEach((s, i) => {
+    list.innerHTML += `<div class="shop-card" onclick="openShopDetail(${i})"><h4>${s.name}</h4><p><b>الكود:</b> ${s.code}</p><p><b>الرصيد:</b> ${s.balance} جنيه</p></div>`;
+  });
+}
+
+function openShopDetail(index){
+  currentShopIndex = index;
+  let s = shops[index];
+  document.getElementById('detailShopName').innerText = s.name;
+  document.getElementById('detailShopCode').innerText = s.code;
+  document.getElementById('detailBalance').innerText = s.balance;
+  document.getElementById('adminPage').style.display = 'none';
+  document.getElementById('shopDetailPage').style.display = 'block';
+  showCardTypes();
+  showHistory();
+}
+
+function showAdmin(){
+  document.getElementById('adminPage').style.display = 'block';
+  document.getElementById('shopDetailPage').style.display = 'none';
+  showShops();
+}
+
+function addCardType(){
+  let price = parseFloat(document.getElementById('cardPrice').value);
+  if(isNaN(price) || price <= 0){ showMsg('خطأ', 'اكتب سعر صحيح'); return; }
+  if(shops[currentShopIndex].cardTypes.find(c => c.price === price)){ showMsg('خطأ', 'الفئة دي موجودة'); return; }
+  shops[currentShopIndex].cardTypes.push({price: price, sold: 0});
+  saveShops();
+  document.getElementById('cardPrice').value = "";
+  toggleModal('addCardModal', false);
+  showMsg('تم', 'تم اضافة الفئة');
+  showCardTypes();
+}
+
+function showCardTypes(){
+  let list = document.getElementById('cardsList');
+  list.innerHTML = "";
+  let s = shops[currentShopIndex];
+  if(s.cardTypes.length === 0){ list.innerHTML = "<p style='color:#999; padding:10px;'>مفيش فئات. دوس + اضافة فئة</p>"; return; }
+  s.cardTypes.sort((a,b)=>a.price-b.price).forEach((c, i) => {
+    list.innerHTML += `<div class="card-type"><div><b>كارت ${c.price} جنيه</b><br><small>تم بيع: ${c.sold} كارت</small></div><button class="btn small red" onclick="confirmDeleteCard(${i})">حذف</button></div>`;
+  });
+}
+
+function confirmDeleteCard(i){
+  deleteType = 'card';
+  deleteIndex = i;
+  document.getElementById('confirmTitle').innerText = 'تأكيد الحذف';
+  document.getElementById('confirmText').innerText = 'متأكد عايز تحذف الفئة دي؟';
+  toggleModal('confirmModal', true);
+}
+
+function showChargeModal(){
+  document.getElementById('chargeAmount').value = "";
+  toggleModal('chargeModal', true);
+}
+
+function confirmCharge(){
+  let amount = parseFloat(document.getElementById('chargeAmount').value);
+  if(!isNaN(amount) && amount > 0){
+    let now = new Date().toLocaleString('ar-EG');
+    shops[currentShopIndex].balance += amount;
+    shops[currentShopIndex].history.push({amount: amount, date: now});
+    saveShops();
+    toggleModal('chargeModal', false);
+    showMsg('تم', 'تم اضافة الرصيد بنجاح');
+    openShopDetail(currentShopIndex);
+  } else {
+    showMsg('خطأ', 'اكتب مبلغ صحيح');
+  }
+}
+
+function showHistory(){
+  let historyDiv = document.getElementById('detailHistory');
+  historyDiv.innerHTML = "";
+  let s = shops[currentShopIndex];
+  if(s.history.length === 0){ historyDiv.innerHTML = "<p style='color:#999; padding:10px;'>مفيش تحويلات لسه</p>"; }
+  else{ s.history.forEach(h => { historyDiv.innerHTML += `<div class="history-item">✅ تم استلام مبلغ ${h.amount} جنيه <br><small>${h.date}</small></div>`; }); }
+}
+</script>
+</body>
+</html>

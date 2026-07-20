@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خدماتنا</title>
+<style>
+body {margin:0; background:#f2f2f2; font-family:Tahoma;}
+.topbar {background:#d40000; height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 15px; color:white;}
+.topbar .back {font-size:24px; cursor:pointer;}
+.topbar .title {font-size:18px; font-weight:bold;}
+.topbar .lang {font-size:14px; background:white; color:#d40000; padding:5px 12px; border-radius:20px; cursor:pointer; font-weight:bold;}
+.card {background:white; border-radius:15px; margin:15px; padding:20px; box-shadow:0 2px 8px #ccc;}
+.service-item {background:#f9f9f9; padding:15px; border-radius:12px; margin:10px 0; display:flex; align-items:center; gap:12px;}
+.service-item .icon {width:45px; height:45px; background:#ffecec; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; color:#d40000; flex-shrink:0;}
+.service-item .text {text-align:right; flex:1;}
+.service-item .text b {display:block; color:#333; font-size:16px; margin-bottom:5px;}
+.service-item .text span {color:#666; font-size:14px; line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back" onclick="history.back()">←</span>
+  <span class="title" id="pageTitle">خدماتنا</span>
+  <span class="lang" onclick="toggleLang()">EN</span>
+</div>
+
+<div class="card">
+  <h3 id="subTitle" style="color:#d40000; text-align:center;">ماذا نقدم لك؟</h3>
+  
+  <div class="service-item">
+    <div class="icon">⚙️</div>
+    <div class="text">
+      <b id="s1t">إدارة شبكات الميكروتك</b>
+      <span id="s1d">نظام متكامل لإدارة المستخدمين والكروت والاشتراكات بكل سهولة</span>
+    </div>
+  </div>
+
+  <div class="service-item">
+    <div class="icon">🎧</div>
+    <div class="text">
+      <b id="s2t">دعم فني متميز</b>
+      <span id="s2d">فريق متخصص لمساعدتك في حل المشاكل التقنية على مدار الساعة</span>
+    </div>
+  </div>
+
+  <div class="service-item">
+    <div class="icon">📊</div>
+    <div class="text">
+      <b id="s3t">تقارير ذكية</b>
+      <span id="s3d">احصل على إحصائيات دقيقة عن المبيعات والأرباح والنشاط العام</span>
+    </div>
+  </div>
+
+  <div class="service-item">
+    <div class="icon">💰</div>
+    <div class="text">
+      <b id="s4t">شحن رصيد للمحلات</b>
+      <span id="s4d">اشحن رصيدك في اي وقت من خلال لوحة التحكم</span>
+    </div>
+  </div>
+</div>
+
+<script>
+let isArabic = true;
+function toggleLang(){
+  isArabic = !isArabic;
+  let btn = document.querySelector('.lang');
+  
+  if(isArabic){
+    document.documentElement.dir = 'rtl';
+    btn.innerText = 'EN';
+    document.getElementById('pageTitle').innerText = 'خدماتنا';
+    document.getElementById('subTitle').innerText = 'ماذا نقدم لك؟';
+    document.getElementById('s1t').innerText = 'إدارة شبكات الميكروتك';
+    document.getElementById('s1d').innerText = 'نظام متكامل لإدارة المستخدمين والكروت والاشتراكات بكل سهولة';
+    document.getElementById('s2t').innerText = 'دعم فني متميز';
+    document.getElementById('s2d').innerText = 'فريق متخصص لمساعدتك في حل المشاكل التقنية على مدار الساعة';
+    document.getElementById('s3t').innerText = 'تقارير ذكية';
+    document.getElementById('s3d').innerText = 'احصل على إحصائيات دقيقة عن المبيعات والأرباح والنشاط العام';
+    document.getElementById('s4t').innerText = 'شحن رصيد للمحلات';
+    document.getElementById('s4d').innerText = 'اشحن رصيدك في اي وقت من خلال لوحة التحكم';
+  } else {
+    document.documentElement.dir = 'ltr';
+    btn.innerText = 'AR';
+    document.getElementById('pageTitle').innerText = 'Our Services';
+    document.getElementById('subTitle').innerText = 'What We Offer?';
+    document.getElementById('s1t').innerText = 'Mikrotik Network Management';
+    document.getElementById('s1d').innerText = 'Complete system to manage users, cards and subscriptions easily';
+    document.getElementById('s2t').innerText = 'Excellent Technical Support';
+    document.getElementById('s2d').innerText = 'Specialized team to help you solve technical problems 24/7';
+    document.getElementById('s3t').innerText = 'Smart Reports';
+    document.getElementById('s3d').innerText = 'Get accurate statistics about sales, profits and overall activity';
+    document.getElementById('s4t').innerText = 'Recharge Shop Balance';
+    document.getElementById('s4d').innerText = 'Recharge your balance anytime through the control panel';
+  }
+}
+</script>
+</body>
+</html>

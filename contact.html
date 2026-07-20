@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>اتصل بنا</title>
+<style>
+body {margin:0; background:#f2f2f2; font-family:Tahoma;}
+.topbar {background:#d40000; height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 15px; color:white;}
+.topbar.back {font-size:24px; cursor:pointer;}
+.topbar.title {font-size:18px; font-weight:bold;}
+.topbar.lang {font-size:14px; background:white; color:#d40000; padding:5px 12px; border-radius:20px; cursor:pointer; font-weight:bold;}
+.card {background:white; border-radius:15px; margin:15px; padding:20px; box-shadow:0 2px 8px #ccc;}
+.contact-item {background:#f9f9f9; padding:15px; border-radius:12px; margin:10px 0; display:flex; align-items:center; justify-content:right; gap:12px; text-decoration:none; color:inherit;}
+.contact-item img {width:45px; height:45px; border-radius:50%;}
+.contact-item .text {text-align:right; flex:1;}
+.contact-item .text b {display:block; color:#333; font-size:16px;}
+.contact-item .text span {color:#666; font-size:14px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back" onclick="window.location.href='index.html'">←</span>
+  <span class="title">اتصل بنا</span>
+  <span class="lang" onclick="toggleLang()">EN</span>
+</div>
+
+<div class="card">
+  <h3 style="color:#d40000; text-align:center;">تواصل معنا في اي وقت</h3>
+  
+  <!-- واتساب - حط رقمك هنا لازق -->
+  <a class="contact-item" href="https://wa.me/201020427153">
+    <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png">
+    <div class="text">
+      <b>واتساب الدعم الفني</b>
+      <span>01020427153</span>
+    </div>
+  </a>
+
+  <!-- تليفون -->
+  <a class="contact-item" href="tel:01020427153">
+    <img src="https://cdn-icons-png.flaticon.com/512/724/724664.png">
+    <div class="text">
+      <b>رقم الهاتف</b>
+      <span>01020427153</span>
+    </div>
+  </a>
+
+  <!-- تيليجرام -->
+  <a class="contact-item" href="https://t.me/username">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
+    <div class="text">
+      <b>تيليجرام</b>
+      <span>@username</span>
+    </div>
+  </a>
+</div>
+
+<script>
+let isArabic = true;
+function toggleLang(){
+  isArabic = !isArabic;
+  let btn = document.querySelector('.lang');
+  if(isArabic){
+    document.documentElement.dir = 'rtl';
+    btn.innerText = 'EN';
+  } else {
+    document.documentElement.dir = 'ltr';
+    btn.innerText = 'AR';
+  }
+}
+</script>
+</body>
+</html>

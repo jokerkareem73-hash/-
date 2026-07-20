@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شقاوة نت - تسجيل الدخول</title>
+<style>
+body {margin:0; background:#f2f2f2; font-family:Tahoma; text-align:center;}
+.topbar {background:#d40000; height:50px; display:flex; align-items:center; justify-content:flex-end; padding:0 15px;}
+.lang-btn {background:white; color:#d40000; border:none; padding:6px 14px; border-radius:20px; font-weight:bold; cursor:pointer; font-size:14px;}
+.logo {margin:20px auto 5px; font-size:32px; font-weight:bold;}
+.logo span.black {color:black;}
+.logo span.red {color:#d40000; border:2px solid #d40000; padding:2px 12px; border-radius:8px;}
+.subtitle {font-size:14px; color:#333; margin-bottom:5px;}
+.subtitle2 {font-size:12px; color:#d40000; margin-bottom:20px;}
+.card {background:white; border-radius:20px; margin:10px 15px; padding:20px; box-shadow:0 2px 10px #ccc;}
+.btn2 {border:1px solid #ddd; background:white; padding:12px 20px; border-radius:12px; margin:5px; width:43%; color:#d40000; font-size:15px; font-weight:bold; cursor:pointer;}
+.id-box {background:#f5f5f5; border-radius:15px; padding:10px; margin:15px 0; color:#666; font-size:13px; border:1px dashed #ccc;}
+.loading {background:#ffecec; border-radius:15px; padding:12px; color:#d40000; margin:15px 0; font-weight:bold;}
+label {display:block; text-align:right; margin-top:15px; font-size:14px; color:#333;}
+input {width:90%; padding:12px; margin:8px 0; border:1px solid #ddd; border-radius:12px; font-size:16px; text-align:right;}
+.btn {background:#d40000; color:white; padding:15px; border:none; width:90%; border-radius:12px; font-size:18px; margin-top:15px; font-weight:bold; cursor:pointer;}
+/* المودال */
+.modal {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;}
+.modal.active {display:flex;}
+.modal-content {background:white; padding:20px; border-radius:20px; width:90%; max-width:400px; text-align:center;}
+.modal-content h3 {color:#d40000; margin-top:0;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="lang-btn" onclick="toggleLang()">EN</button>
+</div>
+
+<div class="logo"><span class="black" id="logo1">شـقـاوة</span><br><span class="red" id="logo2">shaqawa</span></div>
+<div class="subtitle" id="sub1">لخدمات شبكات</div>
+<div class="subtitle2" id="sub2">هو تسبوت شقاوه نت</div>
+
+<div class="card">
+  <button class="btn2" id="btn1" onclick="window.location.href='services.html'">⚙️ خدماتنا</button>
+  <button class="btn2" id="btn2" onclick="window.location.href='contact.html'">🎧 اتصل بنا</button>
+  <div class="id-box" id="welcome">اهلا بيك في شقاوه نت</div>
+  <div class="loading" id="serverDate">📅 تاريخ السيرفر<br>جاري التحميل...</div>
+  <label id="label1">كود التفعيل</label>
+  <input type="text" id="activationCode" placeholder="اكتب الكود هنا">
+  <button class="btn" id="btn3" onclick="login()">تفعيل التطبيق</button>
+</div>
+
+<!-- مودال الرسائل -->
+<div id="msgModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">تنبيه</h3>
+    <p id="modalText"></p>
+    <button class="btn" style="background:#666; width:100%;" onclick="closeAndRedirect()" id="modalBtn">موافق</button>
+  </div>
+</div>
+
+<script>
+let ADMIN_CODE = "SHQADMIN2026";
+let shops = JSON.parse(localStorage.getItem('shaqawa_shops_v4') || '[]');
+let isArabic = true;
+let loggedInShop = null;
+
+window.onload = function(){
+  let today = new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('serverDate').innerHTML = "📅 تاريخ السيرفر<br>" + today;
+}
+
+function toggleModal(id, show){ 
+  document.getElementById(id).classList.toggle('active', show); 
+}
+
+function showModal(title, text){
+  document.getElementById('modalTitle').innerText = title;
+  document.getElementById('modalText').innerText = text;
+  document.getElementById('modalBtn').innerText = isArabic ? 'موافق' : 'OK';
+  toggleModal('msgModal', true);
+}
+
+function closeAndRedirect(){
+  toggleModal('msgModal', false);
+  if(loggedInShop){
+    localStorage.setItem('currentShop', JSON.stringify(loggedInShop));
+    window.location.href = 'dashboard.html';
+  }
+}
+
+function toggleLang(){
+  isArabic = !isArabic;
+  let btn = document.querySelector('.lang-btn');
+  if(isArabic){
+    document.documentElement.dir = 'rtl';
+    btn.innerText = 'EN';
+    document.getElementById('logo1').innerText = 'شـقـاوة';
+    document.getElementById('logo2').innerText = 'shaqawa';
+    document.getElementById('sub1').innerText = 'لخدمات شبكات';
+    document.getElementById('sub2').innerText = 'هو تسبوت شقاوه نت';
+    document.getElementById('btn1').innerText = '⚙️ خدماتنا';
+    document.getElementById('btn2').innerText = '🎧 اتصل بنا';
+    document.getElementById('welcome').innerText = 'اهلا بيك في شقاوه نت';
+    document.getElementById('label1').innerText = 'كود التفعيل';
+    document.getElementById('btn3').innerText = 'تفعيل التطبيق';
+    document.getElementById('activationCode').placeholder = 'اكتب الكود هنا';
+  } else {
+    document.documentElement.dir = 'ltr';
+    btn.innerText = 'AR';
+    document.getElementById('logo1').innerText = 'Shaqawa';
+    document.getElementById('logo2').innerText = 'Network';
+    document.getElementById('sub1').innerText = 'Network Services';
+    document.getElementById('sub2').innerText = 'Shaqawa Network Hotspot';
+    document.getElementById('btn1').innerText = '⚙️ Our Services';
+    document.getElementById('btn2').innerText = '🎧 Contact Us';
+    document.getElementById('welcome').innerText = 'Welcome to Shaqawa Net';
+    document.getElementById('label1').innerText = 'Activation Code';
+    document.getElementById('btn3').innerText = 'Activate';
+    document.getElementById('activationCode').placeholder = 'Enter code here';
+  }
+}
+
+function login(){
+  let code = document.getElementById('activationCode').value.trim().toUpperCase();
+  if(code === ADMIN_CODE){
+    window.location.href = 'admin.html';
+  }
+  else if(shops.find(s => s.code === code)){
+    loggedInShop = shops.find(s => s.code === code);
+    let msg = isArabic ? `مرحبا: ${loggedInShop.name}\nرصيدك: ${loggedInShop.balance} جنيه` : `Welcome: ${loggedInShop.name}\nBalance: ${loggedInShop.balance} EGP`;
+    showModal(isArabic ? 'مرحبا' : 'Welcome', msg);
+  }
+  else { 
+    let err = isArabic ? '❌ كود التفعيل خطأ' : '❌ Wrong Activation Code';
+    showModal(isArabic ? 'خطأ' : 'Error', err);
+  }
+}
+</script>
+</body>
+</html>

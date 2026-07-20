@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شقاوة نت</title>
+<style>
+body {margin:0; background:#f2f2f2; font-family:Tahoma; text-align:center;}
+.topbar {background:#d40000; height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 15px;}
+.balance-small {background:white; color:#d40000; padding:6px 14px; border-radius:20px; font-weight:bold; font-size:14px;}
+.logout-btn {background:white; color:#d40000; border:none; padding:6px 14px; border-radius:20px; font-weight:bold; cursor:pointer; font-size:14px;}
+.logo {margin:20px auto 5px; font-size:32px; font-weight:bold;}
+.logo span.black {color:black;}
+.logo span.red {color:#d40000; border:2px solid #d40000; padding:2px 12px; border-radius:8px;}
+.subtitle {font-size:14px; color:#333; margin-bottom:20px;}
+.card {background:white; border-radius:20px; margin:10px 15px; padding:20px; box-shadow:0 2px 10px #ccc; text-align:right;}
+.card-price {background: linear-gradient(135deg, #ffecec, #fff); border:2px solid #d40000; border-radius:15px; padding:18px; margin:12px 0; text-align:center;}
+.card-price .price {font-size:28px; color:#d40000; font-weight:bold; margin-bottom:5px;}
+.btn {background:#d40000; color:white; padding:15px; border:none; width:100%; border-radius:12px; font-size:16px; margin:8px 0; font-weight:bold; cursor:pointer;}
+.btn.green {background:#25D366;}
+.btn.gray {background:#666;}
+.modal {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;}
+.modal.active {display:flex;}
+.modal-content {background:white; padding:20px; border-radius:20px; width:90%; max-width:400px; text-align:center;}
+.modal-content input {width:90%; padding:12px; border:1px solid #ddd; border-radius:12px; font-size:16px; text-align:center; margin:10px 0;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="balance-small" id="balanceTop">الرصيد: 0 ج</span>
+  <button class="logout-btn" onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="logo"><span class="black">شـقـاوة</span><br><span class="red">shaqawa</span></div>
+<div class="subtitle">لوحة تحكم المحل</div>
+
+<div class="card">
+  <div style="text-align:center; margin-bottom:15px;">
+    <div>مرحبا <b id="welcomeMsg">المحل</b></div>
+    <div style="font-size:13px; color:#666;">كود المحل: <span id="shopCode">-</span></div>
+  </div>
+  <h3 style="color:#d40000; text-align:center;">اختار فئة الكارت</h3>
+  <div id="categoriesList"></div>
+</div>
+
+<div id="sendModal" class="modal">
+  <div class="modal-content">
+    <h3>بيانات الكارت</h3>
+    <input type="tel" id="clientPhone" placeholder="رقم العميل 010xxxxxxxx">
+    <div id="sendCategoriesList"></div>
+    <button class="btn gray" onclick="toggleModal('sendModal', false)">الغاء</button>
+  </div>
+</div>
+
+<div id="msgModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">تنبيه</h3>
+    <p id="modalText"></p>
+    <button class="btn" style="background:#666;" onclick="toggleModal('msgModal', false)">موافق</button>
+  </div>
+</div>
+
+<script>
+let currentShop = JSON.parse(localStorage.getItem('currentShop') || '{}');
+let allShops = JSON.parse(localStorage.getItem('shaqawa_shops_v4') || '[]');
+let selectedPrice = 0;
+
+window.onload = function(){
+  if(!currentShop.code){ showModal('خطأ', 'يجب تسجيل الدخول اولا'); setTimeout(()=>window.location.href='login.html',1500); return; }
+  let shopData = allShops.find(s => s.code === currentShop.code) || currentShop;
+  document.getElementById('welcomeMsg').innerText = shopData.name;
+  document.getElementById('shopCode').innerText = shopData.code;
+  document.getElementById('balanceTop').innerText = `الرصيد: ${shopData.balance} ج`;
+  loadCategories(shopData);
+}
+
+function loadCategories(shopData){
+  let list = document.getElementById('categoriesList');
+  let cats = shopData.cardTypes || [];
+  if(cats.length === 0){ list.innerHTML = `<p style="color:#999; text-align:center;">لا توجد فئات مضافة بعد</p>`; return; }
+  list.innerHTML = '';
+  cats.sort((a,b)=>a.price-b.price).forEach(cat => {
+    list.innerHTML += `<div class="card-price"><div class="price">${cat.price} <span>جنيه</span></div><button class="btn green" onclick="openSendModal(${cat.price})">📱 ارسال كارت واتساب</button></div>`;
+  });
+}
+
+function toggleModal(id, show){ document.getElementById(id).classList.toggle('active', show); }
+function showModal(title, text){ document.getElementById('modalTitle').innerText = title; document.getElementById('modalText').innerText = text; toggleModal('msgModal', true); }
+
+function openSendModal(price){
+  selectedPrice = price;
+  toggleModal('sendModal', true);
+  document.getElementById('clientPhone').value = "";
+  document.getElementById('sendCategoriesList').innerHTML = `<button class="btn green" onclick="createCardManual(selectedPrice)">تأكيد وارسال كارت ${price} جنيه</button>`;
+}
+
+// النسخة اليدوي اللي بتشتغل ببلاش
+function createCardManual(price){
+  let phone = document.getElementById('clientPhone').value.trim();
+  if(phone === "" || phone.length < 10){ showModal('خطأ', 'اكتب رقم العميل صح'); return; }
+
+  let shopData = allShops.find(s => s.code === currentShop.code) || currentShop;
+  let username = shopData.code + "-" + Date.now().toString().slice(-6);
+  let password = Math.random().toString(36).substring(2, 8).UpperCase();
+
+  sendWhatsApp(price, username, password, shopData, phone);
+  toggleModal('sendModal', false);
+  showModal('تم بنجاح', `تم توليد الكارت:\nاليوزر: ${username}\nالباس: ${password}`);
+}
+
+function sendWhatsApp(price, code, password, shopData, phone){
+  let date = new Date().toLocaleString('ar-EG');
+  let message = `*شقاوة نت*%0A*كارت ${price} جنيه*%0A*اليوزر:* ${code}%0A*الباسورد:* ${password}%0A*المحل:* ${shopData.name}%0A*التاريخ:* ${date}%0A%0Aللدخول ادخل اليوزر والباس في صفحة الهوتسبوت%0Aشكرا لتعاملك معنا`;
+  if(phone.startsWith('0')) phone = '2' + phone; 
+  window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+}
+
+function logout(){ localStorage.removeItem('currentShop'); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>
